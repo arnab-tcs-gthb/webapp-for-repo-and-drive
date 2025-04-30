@@ -28,8 +28,9 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           path: template
 
-      # - name: Wait for new repo availability
-      #   run: sleep 10
+      - name: Wait for new repo availability
+        run: sleep 10
+        
       # Push to new Repo
       - name: Push to New Repo
         run:  |
