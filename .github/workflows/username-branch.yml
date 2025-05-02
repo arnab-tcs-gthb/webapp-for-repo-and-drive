@@ -1,0 +1,50 @@
+# This is a workflow for cloning template branch in new branch
+
+name: Clone Template branch into new branch
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # push:
+  #   branches: [ "main" ]
+  # pull_request:
+  #   branches: [ "main" ]
+
+  workflow_dispatch:
+    inputs:
+      username:
+        required: true
+        description: 'username used for branch name'
+        type: string
+      folder_url:
+        required: true
+        type: string
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Set Env variables
+        run: |
+          echo "TARGET_REPO=arnab-tcs-gthb/aem-boilerplate" >> $GITHUB_ENV
+          echo "NEW_BRANCH=${{ github.event.inputs.username }}" >> $GITHUB_ENV
+          echo "FOLDER_URL=${{ github.event.inputs.folder_url }}" >> $GITHUB_ENV
+
+      - name: Print sharepoint folder url
+        run: |
+          echo "Sharepoint folder for $NEW_BRANCH is: $FOLDER_URL"
+          
+      # - name: Wait for new repo availability
+      #   run: sleep 10
+        
+      # Push to new Repo
+      - name: Push to New Repo
+        run:  |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git clone https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/$TARGET_REPO.git
+          cd $(basename $TARGET_REPO)
+          git checkout -b $NEW_BRANCH
+          git push origin $NEW_BRANCH
+      
