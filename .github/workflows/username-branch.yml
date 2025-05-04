@@ -46,7 +46,6 @@ jobs:
           git clone https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/$TARGET_REPO.git
           cd $(basename $TARGET_REPO)
           git checkout -b $NEW_BRANCH
-          # git push origin $NEW_BRANCH
 
       - name: Overwrite fstab.yaml with folder url
         run: |
