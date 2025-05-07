@@ -52,5 +52,35 @@ jobs:
           echo "mountpoints:" > fstab.yaml
           echo "  /: $FOLDER_URL" >> fstab.yaml
           git add fstab.yaml
-          git commit -m "Reset fstab.yaml with new Google Drive folder url"
+          mkdir -p .devcontainer
+          cat <<EOF > .devcontainer/devcontainer.json
+          {
+            "name": "Python Workspace",
+            "image": "mcr.microsoft.com/devcontainers/python:3.11",
+            "postCreateCommand": "pip install -r requirements.txt",
+            "features": {},
+            "customizations": {
+              "vscode": {
+                "extensions": [
+                  "ms-python.python",
+                  "ms-toolsai.jupyter"
+                ]
+              }
+            }
+          }
+          EOF
+          echo "requests" > .devcontainer/requirements.txt
+          echo "flask" >> .devcontainer/requirements.txt
+
+          # .devcontainer/ is ignored
+          echo ".devcontainer/" >> .gitignore
+          git add .gitignore
+          git add .devcontainer
+          git commit -m "Reset fstab.yaml with new Google Drive folder url and set up workspace"
           git push origin $NEW_BRANCH
+
+      - name: Output Codespace link
+        run: |
+          echo " Codespace Ready!"
+          echo "Open new branch and click 'Code > Codespaces > Create codespace on this branch':"
+          echo "https://github.com/$TARGET_REPO/tree/$NEW_BRANCH"
