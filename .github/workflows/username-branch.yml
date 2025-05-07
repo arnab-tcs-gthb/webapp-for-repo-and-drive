@@ -71,10 +71,6 @@ jobs:
           EOF
           echo "requests" > .devcontainer/requirements.txt
           echo "flask" >> .devcontainer/requirements.txt
-
-          # .devcontainer/ is ignored
-          echo ".devcontainer/" >> .gitignore
-          git add .gitignore
           git add .devcontainer
           git commit -m "Reset fstab.yaml with new Google Drive folder url and set up workspace"
           git push origin $NEW_BRANCH
