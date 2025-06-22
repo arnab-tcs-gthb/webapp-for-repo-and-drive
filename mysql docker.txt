@@ -1,0 +1,88 @@
+DB
+
+FROM mysql:latest
+ENV MYSQL_ROOT_PASSWORD=root12345
+ENV MYSQL_DATABASE=database1
+EXPOSE 3306
+COPY init.sql /docker-entrypoint-initdb.d/
+CMD ["mysqld"]
+
+
+docker build -t my-mysql .
+docker run -d --name mysql-container --network my_network -p 3306:3306 my-mysql:latest
+
+mysql -u root -p -h 127.0.0.1
+
+docker exec -it mysql-container mysql -u root -p
+
+docker network create my_network
+docker run -d --name mysql-container --network my_network -p 3306:3306 my-mysql:latest
+docker run -d --name fastapi-container --network my_network my-fastapi-image
+
+DB_USER=root
+DB_PASSWORD=root12345
+DB_HOST=mysql-container  # Use the MySQL container name instead of localhost
+DB_PORT=3306
+DB_NAME=database1
+
+=====================================================================================================================================
+
+Backend
+
+FROM python:3.13
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+COPY .env /app/.env
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+docker build -t backend_api .
+docker run -d -p 8000:8000 --name backend-container --network my_network backend_api:latest
+docker run -d -p 8000:8000 --env-file .env --name backend-container --network my_network backend_api:latest
+
+=====================================================================================================================================
+
+Frontend
+
+# Use Node.js as the base image
+FROM node:22
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy package.json and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Copy all React app files
+COPY . .
+
+# Copy environment variables file
+COPY .env /app/.env
+
+# Set environment variables explicitly in Docker
+ENV API_BASE_URL=http://vm_ip:8000/api/v1
+
+# Expose the React development server port (default: 3000)
+EXPOSE 3000
+
+# Start the React development server
+CMD ["npm", "start"]
+
+const API_BASE_URL = "http://vm_ip:8000/api/v1";  // Connects to FastAPI backend
+
+docker build -t react-frontend .
+docker run -d -p 3000:3000 --network my_network --name frontend-container react-frontend:latest
+
+
+"IPv4Address of backend-container": "172.18.0.3/16",   // though not connected
+
+=====================================================================================================================================
+
+FullStack deployment
+
+docker build -t fullstack-app .
+docker run -d -p 3000:3000 -p 8000:8000 --env-file .env --name fullstack-container --network my_network fullstack-app:latest
+
